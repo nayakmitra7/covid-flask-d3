@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link href="/static/css/main.css" rel="stylesheet">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="{{url_for('static', filename='js/index.js')}}"></script>
+    <meta charset="utf-8">
+</head>
+<body>
+<div style="">
+    <div class="container">
+        <div class="row margin-top-1 ">
+            <div class="col-md-4"></div>
+            <div class="col-md-4 " ><h2 style="text-decoration:underline"><strong > COVID 19 Data - India</strong></h2>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+        <div class="row margin-top-1" >
+            <div class="col-md-4"><h3 style="margin-top:0px"><strong>Graphical Data</strong></h3></div>
+            <div class="col-md-4"></div>
+            <div class="col-md-4"></div>
+        </div>
+        <div class="row well margin-top-1" style=" margin-bottom:0px" >
+            <div>
+                <div id='graphDiv' style="background: white"></div>
+            </div>
+        </div>
+        <div class="row" >
+            <div class="col-md-4"><h3 style=" margin-bottom:0px" ><strong>Tabular Data</strong></h3></div>
+            <div class="col-md-4"></div>
+            <div class="col-md-4"></div>
+        </div>
+        <div class="row  margin-top-1" >
+            <div class="col-md-12" style="overflow:scroll;max-height: 20vh;">
+                <table class="table" >
+                    <thead >
+                    <tr>
+                        <th>Date</th>
+                        <th>Number of Confirmed Cases</th>
+                        <th>Number of Cured Cases</th>
+                        <th>Number of Deaths</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for result in data['chart_data'] %}
+                    <tr>
+                        <td>{{result['Date']}}</td>
+                        <td class="info">{{result['confirmed']}}</td>
+                        <td class="success">{{result['cured']}}</td>
+                        <td class="danger">{{result['Death']}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+var graphData = {{ data.chart_data | safe }}
+var margin = {top: 30, right: 70, bottom: 60, left: 150};
+    var svgWidth = 1010;
+    var svgHeight = 400;
+    var graphWidth = svgWidth - margin.left - margin.right;
+    var graphHeight = svgHeight - margin.top - margin.bottom;
+
+    var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+    var x = d3.time.scale().range([0, graphWidth]);
+    var y = d3.scale.linear().range([graphHeight, 0]);
+
+    var xAxis = d3.svg.axis().scale(x)
+        .orient("bottom").ticks(30).tickFormat(d3.time.format("%Y-%m-%d"));
+    var yAxis = d3.svg.axis().scale(y)
+        .orient("left");
+
+    var curedLine = d3.svg.line()
+        .x(function(d) { return x(d.Date); })
+        .y(function(d) { return y(d.cured); });
+
+    var deathLine = d3.svg.line()
+        .x(function(d) { return x(d.Date); })
+        .y(function(d) { return y(d.Death); });
+
+    var confirmedLine = d3.svg.line()
+        .x(function(d) { return x(d.Date); })
+        .y(function(d) { return y(d.confirmed); });
+
+    var area = d3.svg.area()
+      .x(function(d) { return x(d.Date); })
+     .y0(function(d) { return y(d.Death); })
+      .y1(function(d) { return y(d.confirmed); })
+
+    var svg = d3.select("#graphDiv")
+      .append("svg")
+        .attr("width", svgWidth)
+        .attr("height", svgHeight)
+      .append("g")
+        .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")")
+ draw(graphData);
+
+</script>
+</body>
+</html>
